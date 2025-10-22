@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Шифратор—Дешифратор (вишиванка)</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#1e90ff;
+      --muted:#94a3b8;
+      --glass: rgba(255,255,255,0.04);
+      --round:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+      background:
+        radial-gradient(800px 400px at 10% 10%, rgba(30,144,255,0.08), transparent 10%),
+        linear-gradient(180deg,#071026 0%, #07182a 100%);
+      color:#e6eef8;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:980px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:20px;
+      padding:20px;
+      box-shadow: 0 10px 40px rgba(2,6,23,0.7);
+      border: 1px solid rgba(255,255,255,0.03);
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:20px;
+    }
+
+    header{
+      grid-column:1/-1;
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+    .logo{
+      width:64px;
+      height:64px;
+      border-radius:12px;
+      background: linear-gradient(135deg,var(--accent), #7b61ff);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      font-size:20px;
+      color:white;
+      box-shadow: 0 6px 18px rgba(30,144,255,0.12);
+    }
+    h1{margin:0;font-size:18px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: var(--round);
+      padding:14px;
+      border: 1px solid rgba(255,255,255,0.02);
+      box-shadow: 0 6px 18px rgba(2,6,23,0.6);
+    }
+
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:8px}
+    textarea, input[type="text"]{
+      width:100%;
+      min-height:92px;
+      resize:vertical;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.03);
+      background:var(--glass);
+      color: #e6eef8;
+      font-size:15px;
+      outline:none;
+      margin-bottom:10px;
+    }
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    button{
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      color:var(--accent);
+      border:1px solid rgba(30,144,255,0.12);
+      padding:8px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    button.primary{
+      background: linear-gradient(90deg,var(--accent), #7b61ff);
+      color:white;
+      border:none;
+      box-shadow: 0 8px 24px rgba(30,144,255,0.12);
+    }
+    .small{padding:6px 8px;font-size:13px}
+    .muted{color:var(--muted);font-size:13px}
+
+    .sidebar{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .legend{
+      font-size:13px;
+      color:var(--muted);
+      max-height:360px;
+      overflow:auto;
+      padding:10px;
+      border-radius:8px;
+      background: rgba(255,255,255,0.01);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+    .symbol{
+      padding:6px 8px;
+      border-radius:6px;
+      background:rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.01);
+      min-width:78px;
+      text-align:center;
+      font-weight:700;
+    }
+    .char{color:var(--muted);min-width:24px;text-align:center}
+
+    footer{grid-column:1/-1;margin-top:6px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;align-items:center}
+    .example{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size:14px; color:#dbeafe; background: rgba(255,255,255,0.02); padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.02)}
+
+    @media (max-width:920px){
+      .wrap{grid-template-columns:1fr; padding:14px}
+      .sidebar{order:2}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">ШФ</div>
+      <div>
+        <h1>Шифратор — Дешифратор (вишиванка)</h1>
+        <p class="lead">Вводь український текст — отримуй символи, або вставляй символи (з пробілами або без) — отримуй текст назад.</p>
+      </div>
+    </header>
+
+    <div class="card">
+      <label for="plain">Текст (укр):</label>
+      <textarea id="plain" placeholder="Наприклад: Слава Україні">Слава Україні</textarea>
+
+      <div class="controls" style="margin-bottom:8px;">
+        <button class="primary" id="btnEncode">Зашифрувати →</button>
+        <button id="btnClearPlain" class="small">Очистити</button>
+        <button id="btnCopyCipher" class="small">Скопіювати шифр</button>
+      </div>
+
+      <label for="cipher">Шифр (символи):</label>
+      <textarea id="cipher" placeholder="Можна з пробілами або без">◻️◻️◼️ ◼️ ◻️ ◻️✖ ◻️   ◼️◼️◻️ ◻️◼️◻️ ◼️◼️ ◻️ ✦✦ ◼️◼️ ✦</textarea>
+
+      <div class="controls" style="margin-top:6px;">
+        <button id="btnDecode" class="primary">Розшифрувати ←</button>
+        <button id="btnClearCipher" class="small">Очистити</button>
+        <button id="btnCopyPlain" class="small">Скопіювати текст</button>
+      </div>
+
+      <label for="decoded">Розшифрований текст:</label>
+      <textarea id="decoded" readonly placeholder="Результат розшифровки"></textarea>
+
+      <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+        <div class="muted">Приклад шифру для «Слава Україні»:</div>
+        <div class="example">◻️◻️◼️ ◼️ ◻️ ◻️✖ ◻️ ◼️◼️◻️ ◻️◼️◻️ ◼️◼️ ◻️ ✦✦ ◼️◼️ ✦</div>
+      </div>
+    </div>
+
+    <aside class="sidebar card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-weight:700">Легенда (буква → символ)</div>
+        <div class="muted" style="font-size:12px">Автоматичне розпізнавання довгих комбінацій</div>
+      </div>
+
+      <div class="legend" id="legend">
+        <!-- заповнюється скриптом -->
+      </div>
+
+      <div style="margin-top:8px; display:flex;gap:8px;">
+        <button id="btnExample" class="small">Вставити приклад</button>
+        <button id="btnAbout" class="small">Про алгоритм</button>
+      </div>
+    </aside>
+
+    <footer>
+      <div>Працює в браузері — нічого не відправляється кудись</div>
+      <div class="muted">Якщо є помилки — скину оновлений код</div>
+    </footer>
+  </div>
+
+<script>
+/* === Мапа символів === */
+const map = {
+  'А':'◻️',   'Б':'◻️◻️', 'В':'◻️✖', 'Г':'✖✖', 'Ґ':'✖◻️',
+  'Д':'◆◆◆','Е':'◆',    'Є':'◆◆',  'Ж':'◆✖◆','З':'◻️◆◻️',
+  'И':'◆◻️◆','І':'✦',   'Ї':'✦✦',  'Й':'✦✦✦','К':'◻️✦✖',
+  'Л':'◼️',   'М':'◼️✦◼️','Н':'◼️◼️','О':'◼️◼️◼️','П':'◼️◻️◼️',
+  'Р':'◻️◼️◻️','С':'◻️◻️◼️','Т':'◼️◻️◻️','У':'◼️◼️◻️','Ф':'◼️◻️',
+  'Х':'◻️◼️','Ц':'✦◻️◼️','Ч':'✦◼️◻️','Ш':'◻️◼️✦','Щ':'◻️✦◼️',
+  'Ь':'◼️✦◻️','Ю':'◆◻️◼️','Я':'◼️◻️◆'
+};
+
+/* Побудова зворотної мапи */
+const reverseMap = Object.fromEntries(Object.entries(map).map(([k,v]) => [v,k]));
+
+/* --- допоміжна функція: розбиття на графеми (грапheme clusters) --- */
+function splitGraphemes(str){
+  if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function'){
+    try {
+      const seg = new Intl.Segmenter(undefined, {granularity:'grapheme'});
+      return Array.from(seg.segment(str), s => s.segment);
+    } catch(e){}
+  }
+  // fallback (на більшість випадків теж працює)
+  return Array.from(str);
+}
+
+/* --- підготовка для безпробільної розшифровки:
+   маємо ключі, але порівняння повинне працювати по кластерам.
+   Побудуємо масив ключів із довжиною (в графемах), від більшого до меншого --- щоб знайти найдовші комбінації спочатку. */
+const keys = Object.keys(reverseMap);
+const keyObjs = keys.map(k => {
+  return { s: k, seg: splitGraphemes(k), len: splitGraphemes(k).length };
+}).sort((a,b)=> b.len - a.len); // довші перші
+
+/* === UI references === */
+const plainEl = document.getElementById('plain');
+const cipherEl = document.getElementById('cipher');
+const decodedEl = document.getElementById('decoded');
+
+document.getElementById('btnEncode').addEventListener('click', encode);
+document.getElementById('btnDecode').addEventListener('click', decode);
+document.getElementById('btnClearPlain').addEventListener('click', ()=> plainEl.value='');
+document.getElementById('btnClearCipher').addEventListener('click', ()=> cipherEl.value='');
+document.getElementById('btnCopyCipher').addEventListener('click', ()=> copyToClipboard(cipherEl));
+document.getElementById('btnCopyPlain').addEventListener('click', ()=> copyToClipboard(decodedEl));
+document.getElementById('btnExample').addEventListener('click', insertExample);
+document.getElementById('btnAbout').addEventListener('click', ()=> alert("Алгоритм розшифровки:\n1) Розбиваємо вхід на графеми (щоб коректно працювали емодзі/комбінації).\n2) Ідемо ліво→право і спочатку пробуємо знайти найтриваліші ключі (щоб уникнути неправильних коротких матчів).\n3) Якщо нічого не знайдено — ставимо знак питання.\nПрацює з пробілами та без них."));
+
+/* Заповнення легенди */
+const legendBox = document.getElementById('legend');
+for (const [ch, sym] of Object.entries(map)){
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.innerHTML = `<div class="symbol">${sym}</div><div class="char">${ch}</div><div class="muted" style="flex:1">${ch}</div>`;
+  legendBox.appendChild(row);
+}
+
+/* === Функції === */
+
+function encode(){
+  const text = plainEl.value.toUpperCase();
+  const out = [];
+  for (let ch of text){
+    if (map[ch]) out.push(map[ch]);
+    else if (/\s/.test(ch)) out.push(' '); // пробіл зберігаємо
+    else out.push(ch); // інші знаки (пунктуація, цифри) — залишаємо як є
+  }
+  const res = out.join(' ');
+  cipherEl.value = res;
+  decodedEl.value = '';
+}
+
+function decode(){
+  const input = cipherEl.value.trim();
+  if (!input){
+    decodedEl.value = '';
+    return;
+  }
+
+  // Розбиваємо введений рядок на графеми (щоб коректно працювали всі символи)
+  const graphemes = splitGraphemes(input);
+
+  let i = 0;
+  let result = '';
+
+  while (i < graphemes.length){
+    // якщо пробіл або перенос — додаємо пробіл і крок
+    if (/\s/.test(graphemes[i])){
+      result += ' ';
+      i++;
+      continue;
+    }
+
+    let matched = false;
+    // Перевіряємо кожен ключ (в порядку довжини) чи співпадає зріз
+    for (const kobj of keyObjs){
+      const L = kobj.len;
+      if (i + L - 1 >= graphemes.length) continue; // не влізає
+      // взяти зріз і з'єднати
+      const slice = graphemes.slice(i, i+L).join('');
+      if (slice === kobj.s){
+        // знайдено
+        result += reverseMap[kobj.s] ?? '?';
+        i += L;
+        matched = true;
+        break;
+      }
+    }
+
+    if (!matched){
+      // Якщо нічого не знайшлося, можливо вхід містить символ, який сам по собі не в мапі
+      // Додаємо знак питання як маркер невідомого, але щоб уникнути застрягання,
+      // крокуємо на одну графему.
+      result += '?';
+      i++;
+    }
+  }
+
+  decodedEl.value = result.replace(/\s+/g,' ').trim();
+}
+
+/* Копіювання в буфер обміну */
+function copyToClipboard(el){
+  const txt = el.value;
+  if (!txt) return alert('Немає тексту для копіювання');
+  navigator.clipboard?.writeText(txt).then(()=> {
+    const old = el.value;
+    // невелика підказка
+    el.value = old; // без змін, просто підтверджуємо
+    alert('Скопійовано!');
+  }).catch(()=> {
+    alert('Не вдалося скопіювати — можеш скопіювати вручну.');
+  });
+}
+
+/* Вставити приклад */
+function insertExample(){
+  plainEl.value = 'Слава Україні';
+  cipherEl.value = '◻️◻️◼️ ◼️ ◻️ ◻️✖ ◻️ ◼️◼️◻️ ◻️◼️◻️ ◼️◼️ ◻️ ✦✦ ◼️◼️ ✦';
+  decodedEl.value = '';
+}
+
+/* Додатково: автоматичне оновлення результату при вставці */
+plainEl.addEventListener('input', ()=> {
+  // трошки дебаунсу — але простий виклик
+});
+</script>
+</body>
+</html>
